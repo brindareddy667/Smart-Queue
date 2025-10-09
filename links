@@ -1,0 +1,6 @@
+# index page link : http://localhost:5001
+# admin page link : http://127.0.0.1:5001/admin
+# status page link: http://localhost:5001/status/vamsi?joined=true
+# command to continue: python3 app.py
+# to get just a list of insights: python3 generate_key_insights.py
+# to get graphs: python3 analyze_queue_data.py

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join Smart Queue</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background: url("{{ url_for('static', filename='image2.jpeg') }}") no-repeat center center fixed;
+      background-size: cover;
+      background-position: center;
+      color: #2d3436;
+      height: 100vh;
+      margin: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.65);  /* Semi-transparent */
+      backdrop-filter: blur(6px);             /* Frosted-glass effect */
+      position: absolute;
+      top: 45%;                                /* Slightly above center */
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: inline-block;
+      padding: 30px 50px;
+      border-radius: 25px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      font-family: 'Georgia', serif;
+    }
+
+    .box:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 15px;
+      width: 250px;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: #0984e3;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #74b9ff;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      font-size: 14px;
+      background: #333;
+      color: #fff;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 999;
+    }
+
+    .theme-toggle:hover {
+      background: #555;
+    }
+
+    .dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    .dark-mode .box {
+      background: rgba(30, 30, 30, 0.7);
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+
+  <div class="box">
+    <h1>Welcome to Smart Queue</h1>
+    <form action="/join" method="POST">
+      <input type="text" name="name" placeholder="Enter your name" required><br>
+      <button type="submit">Join Queue</button>
+    </form>
+  </div>
+
+  <script>
+    const body = document.body;
+
+    function toggleTheme() {
+      body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    window.onload = () => {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') {
+        body.classList.add('dark-mode');
+      }
+    };
+  </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Status - Smart Queue</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: url("{{ url_for('static', filename='images.jpeg') }}") no-repeat center center fixed;
+      background-size: cover;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 2px #fff;
+    }
+
+    table {
+      width: 80%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    th, td {
+      padding: 12px 20px;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    th {
+      background-color: #e1efff;
+    }
+
+    tr.highlight {
+      background-color: #ffe9b3;
+      font-weight: bold;
+    }
+
+    .info {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      font-size: 14px;
+      background: #333;
+      color: #fff;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 999;
+    }
+
+    .theme-toggle:hover {
+      background: #555;
+    }
+
+    .dark-mode {
+      background-color: #121212;
+      background-image: none;
+      color: #e0e0e0;
+    }
+
+    .dark-mode table {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+    }
+
+    .dark-mode th {
+      background-color: #2a2a2a;
+    }
+
+    .dark-mode tr.highlight {
+      background-color: #554b1b;
+    }
+
+    .eta, #main-timer {
+      min-width: 90px;
+      display: inline-block;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #00b894;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      font-size: 16px;
+      z-index: 9999;
+      animation: fadeOut 4s forwards;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    .exit-button {
+      padding: 10px 20px;
+      background-color: #d63031;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+
+  {% if joined == 'true' %}
+    <div class="toast">✅ You’ve joined the queue!</div>
+  {% endif %}
+
+  <h1>Hi {{ username }}!</h1>
+  <div class="info">
+    Your position: <strong>{{ position }}</strong><br>
+    Estimated wait time: <strong><span id="main-timer" data-seconds="{{ estimated_time * 60 }}"></span></strong><br>
+    Estimated start time: <strong id="start-time"></strong>
+  </div>
+
+  <form id="exitForm" method="POST" action="/exit_queue">
+    <input type="hidden" name="username" value="{{ username }}">
+    <button type="button" onclick="confirmExit()" class="exit-button">🚪 Exit Queue</button>
+  </form>
+
+  <h2 style="margin-top: 40px;">Queue Waiting List</h2>
+  <table>
+    <tr>
+      <th>Position</th>
+      <th>Name</th>
+      <th>ETA (MM:SS)</th>
+      <th>Est. Start Time</th>
+    </tr>
+    {% for person in queue %}
+      <tr class="{% if person.name == username %}highlight{% endif %}">
+        <td>{{ person.position }}</td>
+        <td>{{ person.name }}</td>
+        <td><span class="eta" data-seconds="{{ person.eta * 60 }}"></span></td>
+        <td><span class="start-time" data-offset="{{ person.eta }}"></span></td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+      }
+      updateStartTimes();
+    };
+
+    function formatSeconds(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateStartTimes() {
+      const startEls = document.querySelectorAll('.start-time');
+      const now = new Date();
+      startEls.forEach(el => {
+        const offsetMin = parseInt(el.getAttribute('data-offset'));
+        const startTime = new Date(now.getTime() + offsetMin * 60000);
+        const formatted = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        el.textContent = formatted;
+      });
+
+      // For user’s own timer
+      const mainTimer = document.getElementById('main-timer');
+      const mainStart = document.getElementById('start-time');
+      if (mainTimer && mainStart) {
+        const secs = parseInt(mainTimer.getAttribute('data-seconds'));
+        const userStart = new Date(Date.now() + secs * 1000);
+        const formatted = userStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        mainStart.textContent = formatted;
+      }
+    }
+
+    function updateCountdown() {
+      document.querySelectorAll('.eta').forEach(el => {
+        let secs = parseInt(el.getAttribute('data-seconds'));
+        if (secs > 0) {
+          secs -= 1;
+          el.setAttribute('data-seconds', secs);
+          el.textContent = formatSeconds(secs);
+        } else {
+          el.textContent = "Delay in progress...";
+        }
+      });
+
+      const mainTimer = document.getElementById('main-timer');
+      if (mainTimer) {
+        let secs = parseInt(mainTimer.getAttribute('data-seconds'));
+        if (secs > 0) {
+          secs -= 1;
+          mainTimer.setAttribute('data-seconds', secs);
+          mainTimer.textContent = formatSeconds(secs);
+        } else {
+          mainTimer.textContent = "Delay in progress...";
+        }
+      }
+
+      updateStartTimes();
+    }
+
+    setInterval(updateCountdown, 1000);
+
+    function confirmExit() {
+      if (confirm("Are you sure you want to exit the queue?")) {
+        document.getElementById('exitForm').submit();
+      }
+    }
+
+    if (!window.location.search.includes("joined=true")) {
+      setInterval(() => window.location.reload(), 60000);
+    }
+  </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

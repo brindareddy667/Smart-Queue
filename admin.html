@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Smart Queue</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: url("{{ url_for('static', filename='images.jpeg') }}") no-repeat center center fixed;
+      background-size: cover;
+      color: #000;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 2px #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background-color: rgba(255, 255, 255, 0.85); /* slightly transparent white */
+    }
+
+    th, td {
+      padding: 12px 18px;
+      border: 1px solid #ccc;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    th {
+      background-color: #e1efff;
+    }
+
+    .dark-mode {
+      background-color: #121212;
+      background-image: none;
+      color: #e0e0e0;
+    }
+
+    .dark-mode table {
+      background-color: #1e1e1e;
+      color: #f0f0f0;
+      border-color: #555;
+    }
+
+    .dark-mode th {
+      background-color: #2a2a2a;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      font-size: 14px;
+      background: #333;
+      color: #fff;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+
+  <h1>Admin Panel - Smart Queue</h1>
+
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Wait Time</th>
+      <th>Action</th>
+    </tr>
+    {% for user in queue %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.name }}</td>
+        <td>
+          <form method="POST" action="/update_time">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <input type="number" name="wait_time" value="{{ user.wait_time or 10 }}" min="1" style="width: 60px;">
+            <button type="submit">Update</button>
+          </form>
+        </td>
+        <td>
+          <form method="POST" action="/next">
+            <button type="submit">Next</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <script>
+    const body = document.body;
+    function toggleTheme() {
+      body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    window.onload = () => {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') {
+        body.classList.add('dark-mode');
+      }
+    };
+  </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
