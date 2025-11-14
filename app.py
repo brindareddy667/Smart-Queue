@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 from datetime import datetime, timedelta
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__, template_folder='.', static_folder='.')
 DB_FILE = 'queue.db'
 AVERAGE_WAIT_TIME = 10  # minutes
 
